@@ -5,24 +5,30 @@ module Lib
     ( startApp
     ) where
 
-import Data.Aeson
-import Data.Aeson.TH
-import Network.Wai
-import Network.Wai.Handler.Warp
-import Servant
+import           Data.Aeson
+import           Data.Aeson.TH
+import           Network.Wai
+import           Network.Wai.Handler.Warp
+import           Servant
 
 data User = User
   { userId        :: Int
   , userFirstName :: String
-  , userLastName  :: String
+  , userEmail     :: String
+  , userJoined    :: Day
   } deriving (Eq, Show)
 
 $(deriveJSON defaultOptions ''User)
 
-type API = "users" :> Get '[JSON] [User]
+type UserAPI = "users" :> Get '[JSON] [User]
+            :<|> "albert" :> Get '[JSON] User
+            :<|> "isaac" :> Get '[JSON] User
+            :<|> "sortedById" :> Get '[JSON] [USER]
 
 startApp :: IO ()
-startApp = run 8080 app
+startApp = do
+    putStrLn "Running on port 8080"
+    run 8080 app
 
 app :: Application
 app = serve api server
@@ -30,10 +36,23 @@ app = serve api server
 api :: Proxy API
 api = Proxy
 
-server :: Server API
+server :: Server UserAPI
 server = return users
+    :<|> return albert
+    :<|> return isaac
+    :<|> return sortedById
 
 users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
+users = [albert, isaac]
+
+albert :: User
+albert = User 42 "Albert Einstein" "Albert.E.MC.squared@gmail.com" (fromGregorian 1909 5 8)
+
+isaac :: User
+isaac = User 97 "Isaac Newton" "IsaacAttack@hotmail.com" (fromGregorian 1668 7 3)
+
+sortByID :: [User] -> [User]
+sortByID = sortBy (comparing userId)
+
+sortedById :: [User]
+sortedById = sortByID users
