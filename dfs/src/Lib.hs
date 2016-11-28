@@ -1,18 +1,42 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators   #-}
+
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeOperators              #-}
 module Lib
     ( startApp
     ) where
 
+import           Prelude                       ()
+import           Prelude.Compat
+
+import           Control.Monad.Except
+import           Control.Monad.Reader
 import           Data.Aeson
+import qualified Data.Aeson.Parser
 import           Data.Aeson.TH
-import           Data.List                (sortBy)
-import           Data.Ord                 (comparing)
+import           Data.Aeson.Types
+import           Data.ByteString               (ByteString)
+import           Data.List                     (sortBy)
+import           Data.Maybe
+import           Data.Ord                      (comparing)
+import           Data.String.Conversions
 import           Data.Time.Calendar
+import           GHC.Generics
+import           Network.HTTP.Media            ((//), (/:))
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
+import           System.Directory
+import           Text.Blaze
+import qualified Text.Blaze.Html
+import qualified Text.Blaze.Html.Renderer.Utf8
+
 
 data User = User
   { userId        :: Int

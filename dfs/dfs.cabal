@@ -22,6 +22,16 @@ library
                      , wai
                      , warp
                      , time
+                     , base-compat
+                     , mtl
+                     , attoparsec
+                     , bytestring
+                     , string-conversions
+                     , http-media
+                     , directory
+                     , blaze-markup
+                     , blaze-html
+
   default-language:    Haskell2010
 
 executable dfs-exe

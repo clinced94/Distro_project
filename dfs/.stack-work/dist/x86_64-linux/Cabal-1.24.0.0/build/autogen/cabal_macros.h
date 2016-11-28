@@ -14,6 +14,13 @@
   (major1) == 0 && (major2) <  11 || \
   (major1) == 0 && (major2) == 11 && (minor) <= 2)
 
+/* package attoparsec-0.13.1.0 */
+#define VERSION_attoparsec "0.13.1.0"
+#define MIN_VERSION_attoparsec(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  13 || \
+  (major1) == 0 && (major2) == 13 && (minor) <= 1)
+
 /* package base-4.9.0.0 */
 #define VERSION_base "4.9.0.0"
 #define MIN_VERSION_base(major1,major2,minor) (\
@@ -21,12 +28,68 @@
   (major1) == 4 && (major2) <  9 || \
   (major1) == 4 && (major2) == 9 && (minor) <= 0)
 
+/* package base-compat-0.9.1 */
+#define VERSION_base_compat "0.9.1"
+#define MIN_VERSION_base_compat(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  9 || \
+  (major1) == 0 && (major2) == 9 && (minor) <= 1)
+
+/* package blaze-html-0.8.1.2 */
+#define VERSION_blaze_html "0.8.1.2"
+#define MIN_VERSION_blaze_html(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  8 || \
+  (major1) == 0 && (major2) == 8 && (minor) <= 1)
+
+/* package blaze-markup-0.7.1.0 */
+#define VERSION_blaze_markup "0.7.1.0"
+#define MIN_VERSION_blaze_markup(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  7 || \
+  (major1) == 0 && (major2) == 7 && (minor) <= 1)
+
+/* package bytestring-0.10.8.1 */
+#define VERSION_bytestring "0.10.8.1"
+#define MIN_VERSION_bytestring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  10 || \
+  (major1) == 0 && (major2) == 10 && (minor) <= 8)
+
+/* package directory-1.2.6.2 */
+#define VERSION_directory "1.2.6.2"
+#define MIN_VERSION_directory(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 6)
+
+/* package http-media-0.6.4 */
+#define VERSION_http_media "0.6.4"
+#define MIN_VERSION_http_media(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  6 || \
+  (major1) == 0 && (major2) == 6 && (minor) <= 4)
+
+/* package mtl-2.2.1 */
+#define VERSION_mtl "2.2.1"
+#define MIN_VERSION_mtl(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  2 || \
+  (major1) == 2 && (major2) == 2 && (minor) <= 1)
+
 /* package servant-server-0.8.1 */
 #define VERSION_servant_server "0.8.1"
 #define MIN_VERSION_servant_server(major1,major2,minor) (\
   (major1) <  0 || \
   (major1) == 0 && (major2) <  8 || \
   (major1) == 0 && (major2) == 8 && (minor) <= 1)
+
+/* package string-conversions-0.4 */
+#define VERSION_string_conversions "0.4"
+#define MIN_VERSION_string_conversions(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  4 || \
+  (major1) == 0 && (major2) == 4 && (minor) <= 0)
 
 /* package time-1.6.0.1 */
 #define VERSION_time "1.6.0.1"
@@ -126,7 +189,7 @@
   (major1) == 2 && (major2) <  26 || \
   (major1) == 2 && (major2) == 26 && (minor) <= 0)
 
-#define CURRENT_COMPONENT_ID "dfs-0.1.0.0-1qYKVS4xkpM7O4VmzlHt94"
+#define CURRENT_COMPONENT_ID "dfs-0.1.0.0-F5xKMbPgoKKKG2h4arTi38"
 
-#define CURRENT_PACKAGE_KEY "dfs-0.1.0.0-1qYKVS4xkpM7O4VmzlHt94"
+#define CURRENT_PACKAGE_KEY "dfs-0.1.0.0-F5xKMbPgoKKKG2h4arTi38"
 

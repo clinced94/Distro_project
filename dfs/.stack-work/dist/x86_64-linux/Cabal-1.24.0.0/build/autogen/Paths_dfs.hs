@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/bin"
-libdir     = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/lib/x86_64-linux-ghc-8.0.1/dfs-0.1.0.0-1qYKVS4xkpM7O4VmzlHt94"
+libdir     = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/lib/x86_64-linux-ghc-8.0.1/dfs-0.1.0.0-F5xKMbPgoKKKG2h4arTi38"
 datadir    = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/share/x86_64-linux-ghc-8.0.1/dfs-0.1.0.0"
 libexecdir = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/libexec"
 sysconfdir = "/home/clinced/Documents/Distributed/Distro_project/dfs/.stack-work/install/x86_64-linux/lts-7.10/8.0.1/etc"
