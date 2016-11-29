@@ -27,7 +27,7 @@ $(deriveJSON defaultOptions ''User)
 type UserAPI = "users" :> Get '[JSON] [User]
                 :<|> "albert" :> Get '[JSON] User
                 :<|> "isaac" :> Get '[JSON] User
-                :<|> "sortedById" :> Get '[JSON] User
+                :<|> "sortedById" :> Get '[JSON] [User]
 
 startApp :: IO ()
 startApp = do
@@ -59,4 +59,4 @@ sortedById :: [User]
 sortedById = sortById users
 
 sortById :: [User] -> [User]
-sortById sortBy (comparing userId)
+sortById = sortBy (comparing userId)
