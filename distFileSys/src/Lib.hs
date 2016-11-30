@@ -15,9 +15,10 @@ import           Data.List                (sortBy)
 import           Data.Ord                 (comparing)
 import           Data.Time.Calendar
 import           Database.MongoDB         (Action, Document, Value, access,
-                                           close, connect, delete, exclude,
-                                           find, host, insertMany, master,
-                                           project, rest, select, sort, (=:))
+                                           allCollections, close, connect,
+                                           delete, exclude, find, findOne, host,
+                                           insert, insertMany, master, project,
+                                           rest, select, sort, (=:))
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
@@ -70,8 +71,17 @@ sortById :: [User] -> [User]
 sortById = sortBy (comparing userId)
 
 
-
-runMongo dbName functionToRun = do
-    pipe <- connect (host "localhost")
-    e <- access pipe master dbName functionToRun
+--Base function for all DB functionality
+--takes in function (e.g. insert, delete, find, etc.)
+--and then accesses the DB and applies that function to it.
+runMongo functionToRun = do
+    pipe <- connect (host "127.0.0.1")
+    e <- access pipe master "test" functionToRun
+    print e
     close pipe
+
+printData = runMongo allCollections
+
+findFirstFile = runMongo $ findOne $ select [] "posts"
+
+findAllFiles = runMongo $ find (select [] "posts") >>= rest
