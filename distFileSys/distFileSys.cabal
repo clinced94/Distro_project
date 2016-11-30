@@ -10,7 +10,6 @@ maintainer:          example@example.com
 copyright:           2016 Author name here
 category:            Web
 build-type:          Simple
-extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
@@ -26,16 +25,6 @@ library
                      , lifted-base
                      , time
                      , warp
-
-  Exposed-modules:   Database.MongoDB
-                     Database.MongoDB.Admin
-                     Database.MongoDB.Connection
-                     Database.MongoDB.Query
-                     Database.MongoDB.Transport
-                     Database.MongoDB.Transport.Tls
-
-  Other-modules:     Database.MongoDB.Internal.Protocol
-                     Database.MongoDB.Internal.Util
 
   default-language:    Haskell2010
 
