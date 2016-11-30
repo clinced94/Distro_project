@@ -54,6 +54,8 @@ type UserAPI = "users" :> Get '[JSON] [User]
                 :<|> "albert" :> Get '[JSON] User
                 :<|> "isaac" :> Get '[JSON] User
                 :<|> "sortedById" :> Get '[JSON] [User]
+                :<|> "saveFile" :> ReqBody '[JSON] UserFile :>
+                        Post '[JSON] ResponseData
 
 startApp :: IO ()
 startApp = do
@@ -71,6 +73,7 @@ server = return users
     :<|> return albert
     :<|> return isaac
     :<|> return sortedById
+    :<|> return saveFile
 
 users :: [User]
 users = [ isaac, albert]
