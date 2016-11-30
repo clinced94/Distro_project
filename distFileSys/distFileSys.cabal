@@ -25,6 +25,7 @@ library
                      , lifted-base
                      , time
                      , warp
+                     , attoparsec
 
   default-language:    Haskell2010
 

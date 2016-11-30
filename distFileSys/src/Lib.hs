@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE DeriveGeneric        #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TemplateHaskell      #-}
@@ -11,14 +12,16 @@ module Lib
 import           Control.Monad.Trans
 import           Data.Aeson
 import           Data.Aeson.TH
-import           Data.List                (sortBy)
-import           Data.Ord                 (comparing)
+import           Data.Attoparsec.ByteString
+import           Data.List                  (sortBy)
+import           Data.Ord                   (comparing)
 import           Data.Time.Calendar
-import           Database.MongoDB         (Action, Document, Value, access,
-                                           allCollections, close, connect,
-                                           delete, exclude, find, findOne, host,
-                                           insert, insertMany, master, project,
-                                           rest, select, sort, (=:))
+import           Database.MongoDB           (Action, Document, Value, access,
+                                             allCollections, close, connect,
+                                             delete, exclude, find, findOne,
+                                             host, insert, insertMany, master,
+                                             project, rest, select, sort, (=:))
+import           GHC.Generics
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
@@ -32,6 +35,20 @@ data User = User
   } deriving (Eq, Show)
 
 $(deriveJSON defaultOptions ''User)
+
+data UserFile = UserFile
+    { file :: String
+    } deriving Generic
+
+instance FromJSON UserFile
+instance ToJSON UserFile
+
+data ResponseData = ResponseData
+    { response :: String
+    } deriving Generic
+
+instance ToJSON ResponseData
+instance FromJSON ResponseData
 
 type UserAPI = "users" :> Get '[JSON] [User]
                 :<|> "albert" :> Get '[JSON] User
@@ -91,3 +108,6 @@ insertFile inFile = runMongo $ insert "files" inFile
 
 deleteFile :: Document -> IO()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
+
+saveFile :: UserFile -> Handler ResponseData
+saveFile userFile = return (ResponseData (file userFile))
