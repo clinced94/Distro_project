@@ -20,8 +20,23 @@ library
                      , aeson
                      , servant-server
                      , wai
+                     , mtl
+                     , mongoDB
+                     , monad-control
+                     , lifted-base
                      , time
                      , warp
+
+  Exposed-modules:   Database.MongoDB
+                     Database.MongoDB.Admin
+                     Database.MongoDB.Connection
+                     Database.MongoDB.Query
+                     Database.MongoDB.Transport
+                     Database.MongoDB.Transport.Tls
+
+  Other-modules:     Database.MongoDB.Internal.Protocol
+                     Database.MongoDB.Internal.Util
+
   default-language:    Haskell2010
 
 executable distFileSys-exe
@@ -43,4 +58,4 @@ test-suite distFileSys-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/distFileSys
+  location: https://github.com/clinced94/distFileSys
