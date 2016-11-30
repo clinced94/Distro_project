@@ -76,12 +76,18 @@ sortById = sortBy (comparing userId)
 --and then accesses the DB and applies that function to it.
 runMongo functionToRun = do
     pipe <- connect (host "127.0.0.1")
-    e <- access pipe master "test" functionToRun
+    e <- access pipe master "fileCabinet" functionToRun
     print e
     close pipe
 
 printData = runMongo allCollections
 
-findFirstFile = runMongo $ findOne $ select [] "posts"
+findFirstFile = runMongo $ findOne $ select [] "files"
 
-findAllFiles = runMongo $ find (select [] "posts") >>= rest
+findAllFiles = runMongo $ find (select [] "files") >>= rest
+
+insertFile :: Document -> IO()
+insertFile inFile = runMongo $ insert "files" inFile
+
+deleteFile :: Document -> IO()
+deleteFile delFile = runMongo $ delete $ select delFile "files"
