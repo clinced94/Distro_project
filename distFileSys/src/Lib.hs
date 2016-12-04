@@ -1,18 +1,23 @@
 {-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE DeriveAnyClass       #-}
 {-# LANGUAGE DeriveGeneric        #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE TypeOperators        #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module Lib
     ( startApp
     ) where
 
-import           Control.Monad.Trans
+import           Control.Monad.Trans        (liftIO)
 import           Data.Aeson
 import           Data.Aeson.TH
 import           Data.Attoparsec.ByteString
+import           Data.Bson.Generic
 import           Data.List                  (sortBy)
 import           Data.Ord                   (comparing)
 import           Data.Time.Calendar
@@ -38,10 +43,10 @@ $(deriveJSON defaultOptions ''User)
 
 data UserFile = UserFile
     { file :: String
-    } deriving Generic
+    } deriving (Show, Generic, FromJSON, ToJSON, FromBSON, ToBSON)
 
-instance FromJSON UserFile
-instance ToJSON UserFile
+deriving instance FromBSON String
+deriving instance ToBSON String
 
 data ResponseData = ResponseData
     { response :: String
@@ -73,7 +78,7 @@ server = return users
     :<|> return albert
     :<|> return isaac
     :<|> return sortedById
-    :<|> return saveFile
+    :<|> saveFile
 
 users :: [User]
 users = [ isaac, albert]
@@ -102,9 +107,9 @@ runMongo functionToRun = do
 
 printData = runMongo allCollections
 
-findFirstFile = runMongo $ findOne $ select [] "files"
+findFirstFile = runMongo $ findOne $ select [] "test"
 
-findAllFiles = runMongo $ find (select [] "files") >>= rest
+findAllFiles = runMongo $ find (select [] "test") >>= rest
 
 insertFile :: Document -> IO()
 insertFile inFile = runMongo $ insert "files" inFile
@@ -113,4 +118,6 @@ deleteFile :: Document -> IO()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
 
 saveFile :: UserFile -> Handler ResponseData
-saveFile userFile = return (ResponseData (file userFile))
+saveFile userFile = liftIO $ do
+    e <- insertFile $ ( toBSON $ userFile )
+    return $ ResponseData (file userFile)
