@@ -77,11 +77,42 @@ $(deriveJSON defaultOptions ''Key)
 $(deriveJSON defaultOptions ''Token)
 
 type UserAPI = "users" :> Get '[JSON] [User]
-                :<|> "token" :> Get '[JSON] Token
                 :<|> "saveFile" :> ReqBody '[JSON] UserFile :>
                         Post '[JSON] ResponseData
                 :<|> "saveUser" :> ReqBody '[JSON] SampleUser :>
                         Post '[JSON] ResponseData
+
+main = do
+    handle  <- openFile "text.txt" ReadMode
+    theFile <- hGetContents handle
+    theKey  <- generateKey
+    --test
+    let temp = encrypt theFile theKey
+    putStrLn (temp)
+    let temp2 = decrypt temp theKey
+    putStrLn (temp2)
+
+
+generateKey :: IO Int
+generateKey = randmRIO(1,25)
+
+
+encrypt :: String -> Int -> String
+encrypt theFile theKey = do
+    let theFileInt = map ord theFile
+    let applyTheKey = map (+theKey) theFileInt
+    let encryptedMsg = map chr applyTheKey
+    return encryptedMsg!!0 --return first element
+
+decrypt :: String -> Int -> String
+decrypt theFiletoDecrypt theDecryptionKey = do
+    let decryptFileInt = map ord theFiletoDecrypt
+    let applyTheKey = map (+(-theDecryptionKey) decryptFileInt
+    let decryptedMsg = map chr applyTheKey
+    return decryptedMsg!!0
+
+
+
 
 
 startApp :: IO ()
@@ -97,10 +128,8 @@ api = Proxy
 
 server :: Server UserAPI
 server = return users
-    :<|> return albert
-    :<|> return isaac
-    :<|> return sortedById
     :<|> saveFile
+    :<|> saveUser
 
 users :: [User]
 users = [ isaac, albert]
