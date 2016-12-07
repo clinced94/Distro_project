@@ -32,6 +32,7 @@ import           GHC.Generics
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
+import           Servant.Client
 import           System.Random
 
 data Key = Key
@@ -61,11 +62,17 @@ server :: Server API
 server = login
     :<|> return publicKey
 
---TODO: login function
+login :: Maybe String -> Handler Token
+login username = liftIO $ do
+    e <- getUsers --getUsers not written yet
+    print e
+    return $ Token(5)
 
 
+
+--authentication code
 generateKey :: IO Int
-generateKey = randmRIO(1,25)
+generateKey = randomRIO(1,25)
 
 --test Keys
 publicKey :: Key
@@ -85,14 +92,15 @@ encrypt theFile theKey = do
 decrypt :: String -> Int -> String
 decrypt theFiletoDecrypt theDecryptionKey = do
     let decryptFileInt = map ord theFiletoDecrypt
-    let applyTheKey = map (+(-theDecryptionKey) decryptFileInt
+    let applyTheKey = map (+(-theDecryptionKey)) decryptFileInt
     let decryptedMsg = map chr applyTheKey
     return decryptedMsg!!0
-    
 
+
+--database interaction
 data User = User
-  { username       :: String
-  , password       :: String
+  { username :: String
+  , password :: String
   } deriving (Eq, Show, FromJSON, ToJSON)
 
 data UserFile = UserFile
@@ -105,6 +113,15 @@ data ResponseData = ResponseData
 
 instance ToJSON ResponseData
 instance FromJSON ResponseData
+
+
+users :: Maybe String -> ClientM [User]
+
+saveFile :: UserFile -> ClientM ResponseData
+
+--TODO: API to post users to db
+
+--TODO: getUsers
 
 
 {- tests encrypting and decrypting a file
