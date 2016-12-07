@@ -34,67 +34,45 @@ import           Network.Wai.Handler.Warp
 import           Servant
 import           System.Random
 
-
-data User = User
-  { userId      :: Int
-  , userName    :: String
-  , email       :: String
-  , userRegDate :: Day
-  } deriving (Eq, Show)
-
-$(deriveJSON defaultOptions ''User)
-
-data UserFile = UserFile
-    { file :: String
-    } deriving (Show, Generic, FromJSON, ToJSON, FromBSON, ToBSON)
-
-deriving instance FromBSON String
-deriving instance ToBSON String
-
-data ResponseData = ResponseData
-    { response :: String
-    } deriving Generic
-
-instance ToJSON ResponseData
-instance FromJSON ResponseData
-
-
-data SampleUser = SampleUser
-    { name :: String
-    } deriving (Eq, Show, Read, ToJSON, FromJSON, ToBSON, FromBSON)
-
-
 data Key = Key
-    {keyStr :: Int
-    } deriving (Eq, Show, Read)
+    {key :: Int
+    } deriving (Eq, Show, Read, Generic, FromJSON, ToJSON)
 
 data Token = Token
-    { metaData :: String
-    , aKey     :: Key
-    } deriving (Show, Read)
+    { token :: Int
+    } deriving (Show, Read, FromJSON, ToJSON)
 
-$(deriveJSON defaultOptions ''Key)
-$(deriveJSON defaultOptions ''Token)
 
-type UserAPI = "users" :> Get '[JSON] [User]
-                :<|> "saveFile" :> ReqBody '[JSON] UserFile :>
-                        Post '[JSON] ResponseData
-                :<|> "saveUser" :> ReqBody '[JSON] SampleUser :>
-                        Post '[JSON] ResponseData
+startApp :: IO ()
+startApp = do
+    putStrLn "Running on port 8080."
+    run 8080 app
 
-main = do
-    handle  <- openFile "text.txt" ReadMode
-    theFile <- hGetContents handle
-    theKey  <- generateKey
-    --test
-    let temp = encrypt theFile theKey
-    putStrLn (temp)
-    let temp2 = decrypt temp theKey
-    putStrLn (temp2)
+app :: Application
+app = serve api server
+
+type API = "login" :> QueryParam "username" String :> Get '[JSON] Token
+        :<|> "publicKey" :> Get '[JSON] Key
+
+api :: Proxy API
+api = Proxy
+
+server :: Server API
+server = login
+    :<|> return publicKey
+
+--TODO: login function
 
 
 generateKey :: IO Int
 generateKey = randmRIO(1,25)
+
+--test Keys
+publicKey :: Key
+publicKey = 13
+
+privateKey :: Key
+privateKey = 7
 
 
 encrypt :: String -> Int -> String
@@ -110,65 +88,32 @@ decrypt theFiletoDecrypt theDecryptionKey = do
     let applyTheKey = map (+(-theDecryptionKey) decryptFileInt
     let decryptedMsg = map chr applyTheKey
     return decryptedMsg!!0
+    
+
+data User = User
+  { username       :: String
+  , password       :: String
+  } deriving (Eq, Show, FromJSON, ToJSON)
+
+data UserFile = UserFile
+    { file :: String
+    } deriving (Show, Generic, FromJSON, ToJSON)
+
+data ResponseData = ResponseData
+    { response :: String
+    } deriving Generic
+
+instance ToJSON ResponseData
+instance FromJSON ResponseData
 
 
-
-
-
-startApp :: IO ()
-startApp = do
-    putStrLn "Running on port 8080."
-    run 8080 app
-
-app :: Application
-app = serve api server
-
-api :: Proxy UserAPI
-api = Proxy
-
-server :: Server UserAPI
-server = return users
-    :<|> saveFile
-    :<|> saveUser
-
-users :: [User]
-users = [ isaac, albert]
-
-isaac :: User
-isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
-
-albert :: User
-albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
-
-sortedById :: [User]
-sortedById = sortById users
-
-sortById :: [User] -> [User]
-sortById = sortBy (comparing userId)
-
-
---Base function for all DB functionality
---takes in function (e.g. insert, delete, find, etc.)
---and then accesses the DB and applies that function to it.
-runMongo functionToRun = do
-    pipe <- connect (host "127.0.0.1")
-    e <- access pipe master "fileCabinet" functionToRun
-    print e
-    close pipe
-
-printData = runMongo allCollections
-
-findFirstFile = runMongo $ findOne $ select [] "test"
-
-findAllFiles = runMongo $ find (select [] "test") >>= rest
-
-insertFile :: Document -> IO()
-insertFile inFile = runMongo $ insert "files" inFile
-
-deleteFile :: Document -> IO()
-deleteFile delFile = runMongo $ delete $ select delFile "files"
-
-saveFile :: UserFile -> Handler ResponseData
-saveFile userFile = liftIO $ do
-    e <- insertFile $ ( toBSON $ userFile )
-    return $ ResponseData (file userFile)
+{- tests encrypting and decrypting a file
+main = do
+    handle  <- openFile "text.txt" ReadMode
+    theFile <- hGetContents handle
+    theKey  <- generateKey
+    --test
+    let temp = encrypt theFile theKey
+    putStrLn (temp)
+    let temp2 = decrypt temp theKey
+    putStrLn (temp2) -}
