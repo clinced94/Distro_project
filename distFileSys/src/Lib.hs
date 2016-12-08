@@ -89,6 +89,16 @@ isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
 albert :: User
 albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
 
+
+users :: [User]
+users = [ isaac, albert]
+
+isaac :: User
+isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
+
+albert :: User
+albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
+
 sortedById :: [User]
 sortedById = sortById users
 
@@ -107,9 +117,9 @@ runMongo functionToRun = do
 
 printData = runMongo allCollections
 
-findFirstFile = runMongo $ findOne $ select [] "test"
+findFirstFile = runMongo $ findOne $ select [] "files"
 
-findAllFiles = runMongo $ find (select [] "test") >>= rest
+findAllFiles = runMongo $ find (select [] "files") >>= rest
 
 insertFile :: Document -> IO()
 insertFile inFile = runMongo $ insert "files" inFile
