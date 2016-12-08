@@ -89,16 +89,6 @@ isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
 albert :: User
 albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
 
-
-users :: [User]
-users = [ isaac, albert]
-
-isaac :: User
-isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
-
-albert :: User
-albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
-
 sortedById :: [User]
 sortedById = sortById users
 
