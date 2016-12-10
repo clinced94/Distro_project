@@ -41,33 +41,9 @@ data Key = Key
 
 data Token = Token
     { token :: Int
-    } deriving (Show, Read, FromJSON, ToJSON)
+    } deriving (Show, Read)
 
-
-startApp :: IO ()
-startApp = do
-    putStrLn "Running on port 8080."
-    run 8080 app
-
-app :: Application
-app = serve api server
-
-type API = "login" :> QueryParam "username" String :> Get '[JSON] Token
-        :<|> "publicKey" :> Get '[JSON] Key
-
-api :: Proxy API
-api = Proxy
-
-server :: Server API
-server = login
-    :<|> return publicKey
-
-login :: Maybe String -> Handler Token
-login username = liftIO $ do
-    e <- getUsers --getUsers not written yet
-    print e
-    return $ Token(5)
-
+$(deriveJSON defaultOptions ''Token)
 
 
 --authentication code
@@ -76,10 +52,13 @@ generateKey = randomRIO(1,25)
 
 --test Keys
 publicKey :: Key
-publicKey = 13
+publicKey = Key 13
 
 privateKey :: Key
-privateKey = 7
+privateKey = Key 7
+
+token1 :: Token
+token1 = Token 11
 
 
 encrypt :: String -> Int -> String
@@ -97,15 +76,22 @@ decrypt theFiletoDecrypt theDecryptionKey = do
     return decryptedMsg!!0
 
 
+
 --database interaction
 data User = User
-  { username :: String
+  { userId   :: Int
+  , username :: String
   , password :: String
-  } deriving (Eq, Show, FromJSON, ToJSON)
+  } deriving (Eq, Show)
 
-data UserFile = UserFile
-    { file :: String
-    } deriving (Show, Generic, FromJSON, ToJSON)
+$(deriveJSON defaultOptions ''User)
+
+data TheFile = TheFile
+    { theContents :: String
+    } deriving (Show, Read, Generic, FromJSON, ToJSON, FromBSON, ToBSON)
+
+deriving instance FromBSON String
+deriving instance ToBSON String
 
 data ResponseData = ResponseData
     { response :: String
@@ -115,14 +101,68 @@ instance ToJSON ResponseData
 instance FromJSON ResponseData
 
 
-users :: Maybe String -> ClientM [User]
+type API = "users" :> Get '[JSON] [User]
+            :<|> "token1" :> Get '[JSON] Token
+            :<|> "saveFile" :> ReqBody '[JSON] TheFile :> Post '[JSON] ResponseData
 
-saveFile :: UserFile -> ClientM ResponseData
+
+startApp :: IO ()
+startApp = do
+    putStrLn "Running on port 8080."
+    run 8080 app
+
+app :: Application
+app = serve api server
+
+
+api :: Proxy API
+api = Proxy
+
+server :: Server API
+server = return users
+    :<|> return token1
+    :<|> saveFile
+
+
+runMongo functionToRun = do
+    pipe <- connect (host "127.0.0.1")
+    e <- access pipe master "fileCabinet" functionToRun
+    print e
+    close pipe
+
+printData = runMongo allCollections
+
+findFirstFile = runMongo $ findOne $ select [] "files"
+
+findAllFiles = runMongo $ find (select [] "files") >>= rest
+
+insertFile :: Document -> IO()
+insertFile inFile = runMongo $ insert "files" inFile
+
+deleteFile :: Document -> IO()
+deleteFile delFile = runMongo $ delete $ select delFile "files"
+
+saveFile :: TheFile -> Handler ResponseData
+saveFile theFile = liftIO $ do
+    print(theFile)
+    let fc = theContents theFile
+    let fileToSave = encrypt fc (key privateKey)
+
+    let encryptedFile = TheFile fileToSave
+    print(encryptedFile)
+    e <- insertFile $ (toBSON $ encryptedFile)
+    return $ ResponseData (theContents encryptedFile)
 
 --TODO: API to post users to db
 
 --TODO: getUsers
 
+
+
+users :: [User]
+users = [ User 1 "clinced" "p@ssw0rd"
+        , User 2 "saint_nick" "12345"
+        ]
 
 {- tests encrypting and decrypting a file
 main = do
@@ -134,3 +174,6 @@ main = do
     putStrLn (temp)
     let temp2 = decrypt temp theKey
     putStrLn (temp2) -}
+
+
+--curl -X POST -d '{"file": "123"}' -H 'Accept: application/json' -H 'Content-type: application/json' http://localhost:8080/saveFile
