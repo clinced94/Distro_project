@@ -78,13 +78,6 @@ decrypt theFiletoDecrypt theDecryptionKey = do
 
 
 --database interaction
-data User = User
-  { userId   :: Int
-  , username :: String
-  , password :: String
-  } deriving (Eq, Show)
-
-$(deriveJSON defaultOptions ''User)
 
 data TheFile = TheFile
     { theContents :: String
@@ -99,6 +92,13 @@ data ResponseData = ResponseData
 
 instance ToJSON ResponseData
 instance FromJSON ResponseData
+
+data User = User
+  { username :: String
+  , password :: String
+  } deriving (Eq, Show, Generic, Read, FromBSON, ToBSON)
+
+$(deriveJSON defaultOptions ''User)
 
 
 type API = "users" :> Get '[JSON] [User]
@@ -136,10 +136,13 @@ findFirstFile = runMongo $ findOne $ select [] "files"
 
 findAllFiles = runMongo $ find (select [] "files") >>= rest
 
-insertFile :: Document -> IO()
+insertFile :: Document -> IO ()
 insertFile inFile = runMongo $ insert "files" inFile
 
-deleteFile :: Document -> IO()
+insertUser :: Document -> IO ()
+insertUser inUser = runMongo $ insert "users" inUser
+
+deleteFile :: Document -> IO ()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
 
 saveFile :: TheFile -> Handler ResponseData
@@ -150,18 +153,28 @@ saveFile theFile = liftIO $ do
 
     let encryptedFile = TheFile fileToSave
     print(encryptedFile)
-    e <- insertFile $ (toBSON $ encryptedFile)
+    e <- insertFile $ ( toBSON $ encryptedFile)
     return $ ResponseData (theContents encryptedFile)
 
---TODO: API to post users to db
+
+addUser :: User -> Handler ResponseData
+addUser theUser = liftIO $ do
+    let theName = username theUser
+    let thePassword = password theUser
+    let encryptedPassword = encrypt thePassword (key privateKey)
+
+    let userToAdd = User theName encryptedPassword
+    e <- insertUser $ ( toBSON $ userToAdd)
+    return $ ResponseData (username userToAdd)
+
 
 --TODO: getUsers
 
 
 
 users :: [User]
-users = [ User 1 "clinced" "p@ssw0rd"
-        , User 2 "saint_nick" "12345"
+users = [ User "clinced" "p@ssw0rd"
+        , User "saint_nick" "12345"
         ]
 
 {- tests encrypting and decrypting a file

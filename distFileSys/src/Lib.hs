@@ -111,10 +111,10 @@ findFirstFile = runMongo $ findOne $ select [] "files"
 
 findAllFiles = runMongo $ find (select [] "files") >>= rest
 
-insertFile :: Document -> IO()
+insertFile :: Document -> IO ()
 insertFile inFile = runMongo $ insert "files" inFile
 
-deleteFile :: Document -> IO()
+deleteFile :: Document -> IO ()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
 
 saveFile :: UserFile -> Handler ResponseData
