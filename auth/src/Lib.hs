@@ -13,21 +13,18 @@ module Lib
     ( startApp
     ) where
 
-import           Control.Monad.Trans        (liftIO)
+import           Control.Monad.Trans      (liftIO)
 import           Data.Aeson
 import           Data.Aeson.TH
-import           Data.Attoparsec.ByteString
 import           Data.Bson.Generic
 import           Data.Char
-import           Data.List                  (sortBy)
-import           Data.Ord                   (comparing)
 import           Data.String
 import           Data.Time.Calendar
-import           Database.MongoDB           (Action, Document, Value, access,
-                                             allCollections, close, connect,
-                                             delete, exclude, find, findOne,
-                                             host, insert, insertMany, master,
-                                             project, rest, select, sort, (=:))
+import           Database.MongoDB         (Action, Document, Value, access,
+                                           allCollections, close, connect,
+                                           delete, exclude, find, findOne, host,
+                                           insert, insertMany, master, project,
+                                           rest, select, sort, (=:))
 import           GHC.Generics
 import           Network.Wai
 import           Network.Wai.Handler.Warp
@@ -88,7 +85,7 @@ deriving instance ToBSON String
 
 data ResponseData = ResponseData
     { response :: String
-    } deriving Generic
+    } deriving (Generic)
 
 instance ToJSON ResponseData
 instance FromJSON ResponseData
@@ -104,6 +101,7 @@ $(deriveJSON defaultOptions ''User)
 type API = "users" :> Get '[JSON] [User]
             :<|> "token1" :> Get '[JSON] Token
             :<|> "saveFile" :> ReqBody '[JSON] TheFile :> Post '[JSON] ResponseData
+            :<|> "addUser"  :> ReqBody '[JSON] User :> Post '[JSON] ResponseData
 
 
 startApp :: IO ()
@@ -122,6 +120,7 @@ server :: Server API
 server = return users
     :<|> return token1
     :<|> saveFile
+    :<|> addUser
 
 
 runMongo functionToRun = do
@@ -147,12 +146,12 @@ deleteFile delFile = runMongo $ delete $ select delFile "files"
 
 saveFile :: TheFile -> Handler ResponseData
 saveFile theFile = liftIO $ do
-    print(theFile)
+    --print(theFile)
     let fc = theContents theFile
     let fileToSave = encrypt fc (key privateKey)
 
     let encryptedFile = TheFile fileToSave
-    print(encryptedFile)
+    --print(encryptedFile)
     e <- insertFile $ ( toBSON $ encryptedFile)
     return $ ResponseData (theContents encryptedFile)
 
