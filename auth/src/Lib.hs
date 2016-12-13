@@ -52,7 +52,7 @@ publicKey :: Key
 publicKey = Key 13
 
 privateKey :: Key
-privateKey = Key 7
+privateKey = Key 2
 
 token1 :: Token
 token1 = Token 11
@@ -184,6 +184,7 @@ main = do
     --test
     let temp = encrypt theFile theKey
     putStrLn ("Encrypted file: " ++ temp)
+    putStrLn ""
 
     let temp2 = decrypt temp theKey
     putStrLn ("Decrypted file: " ++ temp2)
