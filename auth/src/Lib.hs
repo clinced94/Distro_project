@@ -176,16 +176,17 @@ users = [ User "clinced" "p@ssw0rd"
         , User "saint_nick" "12345"
         ]
 
-{- tests encrypting and decrypting a file
+--tests encrypting and decrypting a file
 main = do
-    handle  <- openFile "text.txt" ReadMode
-    theFile <- hGetContents handle
+    theFile <- readFile "text.txt"
+    putStrLn ("Original file: " ++ theFile)
     theKey  <- generateKey
     --test
     let temp = encrypt theFile theKey
-    putStrLn (temp)
+    putStrLn ("Encrypted file: " ++ temp)
+
     let temp2 = decrypt temp theKey
-    putStrLn (temp2) -}
+    putStrLn ("Decrypted file: " ++ temp2)
 
 
 --curl -X POST -d '{"file": "123"}' -H 'Accept: application/json' -H 'Content-type: application/json' http://localhost:8080/saveFile
