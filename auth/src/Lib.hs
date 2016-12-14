@@ -18,6 +18,7 @@ import           Data.Aeson
 import           Data.Aeson.TH
 import           Data.Bson.Generic
 import           Data.Char
+import           Data.Maybe
 import           Data.String
 import           Data.Time.Calendar
 import           Database.MongoDB         (Action, Document, Value, access,
@@ -54,8 +55,8 @@ publicKey = Key 13
 privateKey :: Key
 privateKey = Key 2
 
-token1 :: Token
-token1 = Token 11
+token11 :: Token
+token11 = Token 11
 
 
 encrypt :: String -> Int -> String
@@ -63,14 +64,20 @@ encrypt theFile theKey = do
     let theFileInt = map ord theFile
     let applyTheKey = map (+theKey) theFileInt
     let encryptedMsg = map chr applyTheKey
-    return encryptedMsg!!0 --return first element
+    head (return encryptedMsg) --return first element
 
 decrypt :: String -> Int -> String
 decrypt theFiletoDecrypt theDecryptionKey = do
     let decryptFileInt = map ord theFiletoDecrypt
     let applyTheKey = map (+(-theDecryptionKey)) decryptFileInt
     let decryptedMsg = map chr applyTheKey
-    return decryptedMsg!!0
+    head (return decryptedMsg)
+
+
+login :: Maybe String -> Handler Token
+login username = liftIO $ do
+    print $ getUsers username
+    return token11
 
 
 
@@ -93,15 +100,12 @@ instance FromJSON ResponseData
 data User = User
   { username :: String
   , password :: String
-  } deriving (Eq, Show, Generic, Read, FromBSON, ToBSON)
+  } deriving (Eq, Show, Generic, Read, FromBSON, ToBSON, FromJSON, ToJSON)
 
-$(deriveJSON defaultOptions ''User)
+-- $(deriveJSON defaultOptions ''User)
 
 
-type API = "users" :> Get '[JSON] [User]
-            :<|> "token1" :> Get '[JSON] Token
-            :<|> "saveFile" :> ReqBody '[JSON] TheFile :> Post '[JSON] ResponseData
-            :<|> "addUser"  :> ReqBody '[JSON] User :> Post '[JSON] ResponseData
+type API = "login" :> QueryParam "username" String :> Get '[JSON] Token
 
 
 startApp :: IO ()
@@ -117,10 +121,7 @@ api :: Proxy API
 api = Proxy
 
 server :: Server API
-server = return users
-    :<|> return token1
-    :<|> saveFile
-    :<|> addUser
+server = login
 
 
 runMongo functionToRun = do
@@ -129,11 +130,18 @@ runMongo functionToRun = do
     print e
     close pipe
 
-printData = runMongo allCollections
+returnMongo :: Action IO a0 -> IO a0
+returnMongo functionToRun = do
+    pipe <- connect (host "127.0.0.1")
+    e <- access pipe master "fileCabinet" functionToRun
+    close pipe
+    return e
 
-findFirstFile = runMongo $ findOne $ select [] "files"
+-- printData = runMongo allCollections
 
-findAllFiles = runMongo $ find (select [] "files") >>= rest
+-- findFirstFile = runMongo $ findOne $ select [] "files"
+
+-- findAllFiles = runMongo $ find (select [] "files") >>= rest
 
 insertFile :: Document -> IO ()
 insertFile inFile = runMongo $ insert "files" inFile
@@ -152,7 +160,7 @@ saveFile theFile = liftIO $ do
 
     let encryptedFile = TheFile fileToSave
     --print(encryptedFile)
-    e <- insertFile $ ( toBSON $ encryptedFile)
+    e <- insertFile ( toBSON encryptedFile)
     return $ ResponseData (theContents encryptedFile)
 
 
@@ -163,11 +171,15 @@ addUser theUser = liftIO $ do
     let encryptedPassword = encrypt thePassword (key privateKey)
 
     let userToAdd = User theName encryptedPassword
-    e <- insertUser $ ( toBSON $ userToAdd)
+    e <- insertUser ( toBSON userToAdd)
     return $ ResponseData (username userToAdd)
 
 
---TODO: getUsers
+getUsers :: Maybe String -> Handler [User]
+getUsers username = liftIO $ do
+    listOfUsers <- returnMongo $ find (select ["username" =: username] "users") >>= rest
+    return $ mapMaybe (\ b -> fromBSON b :: Maybe User) listOfUsers
+
 
 
 
