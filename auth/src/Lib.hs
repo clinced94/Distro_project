@@ -58,25 +58,20 @@ privateKey = Key 2
 token11 :: Token
 token11 = Token 11
 
+caesarEncrypt :: Int -> String -> String
+caesarEncrypt theKey theFile =
+    let ords = map ord theFile
+        encrypted = map (+ theKey) ords
+    in map chr encrypted
 
-encrypt :: String -> Int -> String
-encrypt theFile theKey = do
-    let theFileInt = map ord theFile
-    let applyTheKey = map (+theKey) theFileInt
-    let encryptedMsg = map chr applyTheKey
-    head (return encryptedMsg) --return first element
+caesarDecrypt :: Int -> String -> String
+caesarDecrypt theKey theFile = caesarEncrypt (negate theKey) theFile
 
-decrypt :: String -> Int -> String
-decrypt theFiletoDecrypt theDecryptionKey = do
-    let decryptFileInt = map ord theFiletoDecrypt
-    let applyTheKey = map (+(-theDecryptionKey)) decryptFileInt
-    let decryptedMsg = map chr applyTheKey
-    head (return decryptedMsg)
 
 
 login :: Maybe String -> Handler Token
 login username = liftIO $ do
-    print $ getUsers username
+    --print $ getUsers username
     return token11
 
 
@@ -156,7 +151,7 @@ saveFile :: TheFile -> Handler ResponseData
 saveFile theFile = liftIO $ do
     --print(theFile)
     let fc = theContents theFile
-    let fileToSave = encrypt fc (key privateKey)
+    let fileToSave = caesarEncrypt (key privateKey) fc
 
     let encryptedFile = TheFile fileToSave
     --print(encryptedFile)
@@ -168,7 +163,7 @@ addUser :: User -> Handler ResponseData
 addUser theUser = liftIO $ do
     let theName = username theUser
     let thePassword = password theUser
-    let encryptedPassword = encrypt thePassword (key privateKey)
+    let encryptedPassword = caesarEncrypt (key privateKey) thePassword
 
     let userToAdd = User theName encryptedPassword
     e <- insertUser ( toBSON userToAdd)
@@ -194,11 +189,11 @@ main = do
     putStrLn ("Original file: " ++ theFile)
     theKey  <- generateKey
     --test
-    let temp = encrypt theFile theKey
+    let temp = caesarEncrypt theKey theFile
     putStrLn ("Encrypted file: " ++ temp)
     putStrLn ""
 
-    let temp2 = decrypt temp theKey
+    let temp2 = caesarDecrypt theKey temp
     putStrLn ("Decrypted file: " ++ temp2)
 
 
