@@ -138,6 +138,8 @@ returnMongo functionToRun = do
 
 -- findAllFiles = runMongo $ find (select [] "files") >>= rest
 
+findAllUsers = runMongo $ find (select [] "users")  >>= rest
+
 insertFile :: Document -> IO ()
 insertFile inFile = runMongo $ insert "files" inFile
 
@@ -146,6 +148,9 @@ insertUser inUser = runMongo $ insert "users" inUser
 
 deleteFile :: Document -> IO ()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
+
+deleteUser :: Document -> IO ()
+deleteUser delUser = runMongo $ delete $ select delUser "users"
 
 saveFile :: TheFile -> Handler ResponseData
 saveFile theFile = liftIO $ do
@@ -159,14 +164,20 @@ saveFile theFile = liftIO $ do
     return $ ResponseData (theContents encryptedFile)
 
 
-addUser :: User -> Handler ResponseData
+addUser :: User -> IO ResponseData
 addUser theUser = liftIO $ do
     let theName = username theUser
-    let thePassword = password theUser
-    let encryptedPassword = caesarEncrypt (key privateKey) thePassword
+    putStrLn ("Username: " ++ theName)
+    putStrLn ""
+    putStrLn ("Encrypting password: " ++ (password theUser))
+    let encryptedPassword = caesarEncrypt (key privateKey) (password theUser)
+    putStrLn ("Encrypted password: " ++ encryptedPassword)
+    putStrLn ""
 
     let userToAdd = User theName encryptedPassword
     e <- insertUser ( toBSON userToAdd)
+    putStrLn "User added successfully"
+    putStrLn ""
     return $ ResponseData (username userToAdd)
 
 
@@ -183,6 +194,8 @@ users = [ User "clinced" "p@ssw0rd"
         , User "saint_nick" "12345"
         ]
 
+testUser = User "clank" "123456"
+
 --tests encrypting and decrypting a file
 main = do
     theFile <- readFile "text.txt"
@@ -195,6 +208,13 @@ main = do
 
     let temp2 = caesarDecrypt theKey temp
     putStrLn ("Decrypted file: " ++ temp2)
+    putStrLn ""
+
+    addUser testUser
+
+    findAllUsers
+
+
 
 
 --curl -X POST -d '{"file": "123"}' -H 'Accept: application/json' -H 'Content-type: application/json' http://localhost:8080/saveFile
