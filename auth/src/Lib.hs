@@ -167,17 +167,15 @@ saveFile theFile = liftIO $ do
 addUser :: User -> IO ResponseData
 addUser theUser = liftIO $ do
     let theName = username theUser
-    putStrLn ("Username: " ++ theName)
-    putStrLn ""
-    putStrLn ("Encrypting password: " ++ (password theUser))
+    --putStrLn ("Username: " ++ theName)
+    --putStrLn ""
     let encryptedPassword = caesarEncrypt (key privateKey) (password theUser)
-    putStrLn ("Encrypted password: " ++ encryptedPassword)
-    putStrLn ""
-
+    --putStrLn ("Encrypted password: " ++ encryptedPassword)
+    --putStrLn ""
     let userToAdd = User theName encryptedPassword
     e <- insertUser ( toBSON userToAdd)
-    putStrLn "User added successfully"
-    putStrLn ""
+    --putStrLn "User added successfully"
+    --putStrLn ""
     return $ ResponseData (username userToAdd)
 
 

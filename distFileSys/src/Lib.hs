@@ -33,10 +33,8 @@ import           Servant
 
 
 data User = User
-  { userId      :: Int
-  , userName    :: String
-  , email       :: String
-  , userRegDate :: Day
+  { username :: String
+  , password :: String
   } deriving (Eq, Show)
 
 $(deriveJSON defaultOptions ''User)
@@ -55,11 +53,7 @@ data ResponseData = ResponseData
 instance ToJSON ResponseData
 instance FromJSON ResponseData
 
-type UserAPI = "users" :> Get '[JSON] [User]
-                :<|> "albert" :> Get '[JSON] User
-                :<|> "isaac" :> Get '[JSON] User
-                :<|> "sortedById" :> Get '[JSON] [User]
-                :<|> "saveFile" :> ReqBody '[JSON] UserFile :>
+type UserAPI = "saveFile" :> ReqBody '[JSON] UserFile :>
                         Post '[JSON] ResponseData
 
 startApp :: IO ()
@@ -74,38 +68,15 @@ api :: Proxy UserAPI
 api = Proxy
 
 server :: Server UserAPI
-server = return users
-    :<|> return albert
-    :<|> return isaac
-    :<|> return sortedById
-    :<|> saveFile
-
-users :: [User]
-users = [ isaac, albert]
-
-isaac :: User
-isaac = User 372 "Isaac Newton" "isaac@newton.co.uk" (fromGregorian 1683 3 1)
-
-albert :: User
-albert = User 136 "Albert Einstein" "ae@mc2.org" (fromGregorian 1905 12 1)
-
-sortedById :: [User]
-sortedById = sortById users
-
-sortById :: [User] -> [User]
-sortById = sortBy (comparing userId)
+server = saveFile
 
 
---Base function for all DB functionality
---takes in function (e.g. insert, delete, find, etc.)
---and then accesses the DB and applies that function to it.
+--Core function for DB functionality
 runMongo functionToRun = do
     pipe <- connect (host "127.0.0.1")
     e <- access pipe master "fileCabinet" functionToRun
     print e
     close pipe
-
-printData = runMongo allCollections
 
 findFirstFile = runMongo $ findOne $ select [] "files"
 
@@ -119,5 +90,5 @@ deleteFile delFile = runMongo $ delete $ select delFile "files"
 
 saveFile :: UserFile -> Handler ResponseData
 saveFile userFile = liftIO $ do
-    e <- insertFile $ ( toBSON $ userFile )
+    e <- insertFile ( toBSON userFile )
     return $ ResponseData (file userFile)
