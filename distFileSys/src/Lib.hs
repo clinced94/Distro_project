@@ -19,6 +19,7 @@ import           Data.Aeson.TH
 import           Data.Attoparsec.ByteString
 import           Data.Bson.Generic
 import           Data.List                  (sortBy)
+import           Data.Maybe                 (mapMaybe)
 import           Data.Ord                   (comparing)
 import           Data.Time.Calendar
 import           Database.MongoDB           (Action, Document, Value, access,
@@ -35,12 +36,11 @@ import           Servant
 data User = User
   { username :: String
   , password :: String
-  } deriving (Eq, Show)
+  } deriving (Eq, Show, Generic, Read, FromBSON, ToBSON, FromJSON, ToJSON)
 
-$(deriveJSON defaultOptions ''User)
 
-data UserFile = UserFile
-    { file :: String
+data TheFile = TheFile
+    { theContents :: String
     } deriving (Show, Generic, FromJSON, ToJSON, FromBSON, ToBSON)
 
 deriving instance FromBSON String
@@ -53,7 +53,7 @@ data ResponseData = ResponseData
 instance ToJSON ResponseData
 instance FromJSON ResponseData
 
-type UserAPI = "saveFile" :> ReqBody '[JSON] UserFile :>
+type UserAPI = "saveFile" :> ReqBody '[JSON] TheFile :>
                         Post '[JSON] ResponseData
 
 startApp :: IO ()
@@ -78,6 +78,13 @@ runMongo functionToRun = do
     print e
     close pipe
 
+returnMongo :: Action IO a0 -> IO a0
+returnMongo functionToRun = do
+    pipe <- connect (host "127.0.0.1")
+    e <- access pipe master "fileCabinet" functionToRun
+    close pipe
+    return e
+
 findFirstFile = runMongo $ findOne $ select [] "files"
 
 findAllFiles = runMongo $ find (select [] "files") >>= rest
@@ -88,7 +95,13 @@ insertFile inFile = runMongo $ insert "files" inFile
 deleteFile :: Document -> IO ()
 deleteFile delFile = runMongo $ delete $ select delFile "files"
 
-saveFile :: UserFile -> Handler ResponseData
-saveFile userFile = liftIO $ do
-    e <- insertFile ( toBSON userFile )
-    return $ ResponseData (file userFile)
+saveFile :: TheFile -> Handler ResponseData
+saveFile theFile = liftIO $ do
+    e <- insertFile ( toBSON theFile )
+    return $ ResponseData (theContents theFile)
+
+
+findUsersByName :: Maybe String -> Handler [User]
+findUsersByName username = liftIO $ do
+    docs <- returnMongo $ find (select ["username" =: username] "users") >>= rest
+    return $ mapMaybe (\ b -> fromBSON b :: Maybe User) docs

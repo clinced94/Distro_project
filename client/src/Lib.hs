@@ -42,12 +42,19 @@ data Token = Token
     { token :: Int
     } deriving (Show, Generic, FromJSON, ToJSON)
 
+data PublicKey = Key
+    {theKey :: Int
+    } deriving (Show, Generic, FromJSON, ToJSON)
+
+getPublicKey :: ClientM PublicKey
+
 
 login :: Maybe String -> ClientM Token
 
 type AuthAPI = "login" :> QueryParam "username" String :> Get '[JSON] Token
+        :<|> "getPublicKey" :> Get '[JSON] PublicKey
 
 authAPI :: Proxy AuthAPI
 authAPI = Proxy
 
-login = client authAPI
+(login :<|> getPublicKey) = client authAPI
